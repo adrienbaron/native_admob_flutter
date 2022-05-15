@@ -12,13 +12,13 @@ import io.flutter.plugin.platform.PlatformViewFactory
 
 class BannerAdViewFactory : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
 
-    override fun create(context: Context, id: Int, args: Any?): PlatformView {
+    override fun create(context: Context?, id: Int, args: Any?): PlatformView {
         val creationParams = args as Map<String?, Any?>?
         return BannerAdView(context, creationParams)
     }
 }
 
-class BannerAdView(context: Context, data: Map<String?, Any?>?) : PlatformView {
+class BannerAdView(context: Context?, data: Map<String?, Any?>?) : PlatformView {
 
     private var controller: BannerAdController = BannerAdControllerManager.getController(data!!["controllerId"] as String)!!
     private var adSize: AdSize
@@ -65,8 +65,8 @@ class BannerAdView(context: Context, data: Map<String?, Any?>?) : PlatformView {
         }
     }
 
-    private fun generateAdView(context: Context, data: Map<String?, Any?>?) {
-        controller.adView = AdView(context)
+    private fun generateAdView(context: Context?, data: Map<String?, Any?>?) {
+        controller.adView = context?.let { AdView(it) }
         val width: Int = (data!!["size_width"] as Double).toInt()
         val height: Int = (data["size_height"] as Double).toInt()
         if (height != -1) controller.adView!!.adSize = AdSize(width, height)

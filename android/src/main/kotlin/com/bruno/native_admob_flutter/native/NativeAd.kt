@@ -26,14 +26,14 @@ import io.flutter.plugin.platform.PlatformViewFactory
 
 class NativeViewFactory : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
 
-    override fun create(context: Context, id: Int, args: Any?): PlatformView {
+    override fun create(context: Context?, id: Int, args: Any?): PlatformView {
         val creationParams = args as Map<String?, Any?>?
         return NativeAdPlatformView(context, creationParams)
     }
 
 }
 
-class NativeAdPlatformView(context: Context, data: Map<String?, Any?>?) : PlatformView {
+class NativeAdPlatformView(context: Context?, data: Map<String?, Any?>?) : PlatformView {
     private var adView: NativeAdView = NativeAdView(context)
 
     private var ratingBar: RatingBar? = RatingBar(context)
@@ -100,7 +100,10 @@ class NativeAdPlatformView(context: Context, data: Map<String?, Any?>?) : Platfo
                     view = RatingBar(context, null, android.R.attr.ratingBarStyleSmall)
                     (data["starsColor"] as? String)?.let {
                         val drawableReview = (view as RatingBar).progressDrawable
-                        drawableReview.setColorFilter(Color.parseColor(it), PorterDuff.Mode.SRC_ATOP)
+                        drawableReview.setColorFilter(
+                            Color.parseColor(it),
+                            PorterDuff.Mode.SRC_ATOP
+                        )
                     }
                 }
                 "button_view" -> {
@@ -141,8 +144,8 @@ class NativeAdPlatformView(context: Context, data: Map<String?, Any?>?) : Platfo
                     shape.gradientType = RADIAL_GRADIENT
                     shape.gradientRadius = (data["radialGradientRadius"] as Double).toFloat()
                     shape.setGradientCenter(
-                            (data["radialGradientCenterX"] as Double).toFloat(),
-                            (data["radialGradientCenterX"] as Double).toFloat()
+                        (data["radialGradientCenterX"] as Double).toFloat(),
+                        (data["radialGradientCenterX"] as Double).toFloat()
                     )
                 }
                 else -> {
@@ -174,10 +177,11 @@ class NativeAdPlatformView(context: Context, data: Map<String?, Any?>?) : Platfo
         val bottomRight = ((data["bottomRightRadius"] as? Double) ?: 0.0).toFloat()
         val bottomLeft = ((data["bottomLeftRadius"] as? Double) ?: 0.0).toFloat()
         shape.cornerRadii = floatArrayOf(
-                topLeft, topLeft,
-                topRight, topRight,
-                bottomRight, bottomRight,
-                bottomLeft, bottomLeft)
+            topLeft, topLeft,
+            topRight, topRight,
+            bottomRight, bottomRight,
+            bottomLeft, bottomLeft
+        )
 
         (data["borderWidth"] as? Double)?.let {
             val color: String = (data["borderColor"] as? String?) ?: "#FFFFFF"
@@ -196,7 +200,7 @@ class NativeAdPlatformView(context: Context, data: Map<String?, Any?>?) : Platfo
 
         val layoutParams = view.layoutParams ?: LinearLayout.LayoutParams(-1, -1, weight)
         val marginParams = (layoutParams as? ViewGroup.MarginLayoutParams)
-                ?: ViewGroup.MarginLayoutParams(context, null)
+            ?: ViewGroup.MarginLayoutParams(context, null)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             (data["marginRight"] as? Double)?.let { marginParams.rightMargin = it.toInt().dp() }
@@ -237,33 +241,34 @@ class NativeAdPlatformView(context: Context, data: Map<String?, Any?>?) : Platfo
     private var controller: NativeAdmobController? = null
 
     init {
-        adView.setBackgroundColor(Color.TRANSPARENT)
+        if (context != null) {
+            adView.setBackgroundColor(Color.TRANSPARENT)
 
-        val view: View = build(data!!, context)
-        adView.addView(view)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            view.clipToOutline = false
-            view.outlineProvider = ViewOutlineProvider.BOUNDS
-        }
-
-        define()
-
-        (data["controllerId"] as? String)?.let { id ->
-            val controller = NativeAdmobControllerManager.getController(id)
-            controller?.nativeAdChanged = { setNativeAd(it) }
-            controller?.nativeAdUpdateRequested = { layout: Map<String, Any?>, ad: NativeAd? ->
-                adView.removeAllViews()
-                adView.addView(build(layout, context))
-                define()
-                setNativeAd(ad)
+            val view: View = build(data!!, context)
+            adView.addView(view)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                view.clipToOutline = false
+                view.outlineProvider = ViewOutlineProvider.BOUNDS
             }
-            this.controller = controller
-        }
 
-        controller?.nativeAd?.let {
-            setNativeAd(it)
-        }
+            define()
 
+            (data["controllerId"] as? String)?.let { id ->
+                val controller = NativeAdmobControllerManager.getController(id)
+                controller?.nativeAdChanged = { setNativeAd(it) }
+                controller?.nativeAdUpdateRequested = { layout: Map<String, Any?>, ad: NativeAd? ->
+                    adView.removeAllViews()
+                    adView.addView(build(layout, context))
+                    define()
+                    setNativeAd(ad)
+                }
+                this.controller = controller
+            }
+
+            controller?.nativeAd?.let {
+                setNativeAd(it)
+            }
+        }
     }
 
     private fun define() {
@@ -306,7 +311,8 @@ class NativeAdPlatformView(context: Context, data: Map<String?, Any?>?) : Platfo
         adStore?.visibility = if (nativeAd.store == null) View.INVISIBLE else View.VISIBLE
         adStore?.text = nativeAd.store
 
-        adView.starRatingView?.visibility = if (nativeAd.starRating == null) View.INVISIBLE else View.VISIBLE
+        adView.starRatingView?.visibility =
+            if (nativeAd.starRating == null) View.INVISIBLE else View.VISIBLE
         if (nativeAd.starRating != null)
             (adView.starRatingView as? RatingBar)?.rating = nativeAd.starRating!!.toFloat()
 
