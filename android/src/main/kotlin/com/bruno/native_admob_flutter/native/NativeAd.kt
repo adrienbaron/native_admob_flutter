@@ -34,11 +34,11 @@ class NativeViewFactory : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
 }
 
 class NativeAdPlatformView(context: Context?, data: Map<String?, Any?>?) : PlatformView {
-    private var adView: NativeAdView = NativeAdView(context)
+    private var adView: NativeAdView = NativeAdView(context!!)
 
     private var ratingBar: RatingBar? = RatingBar(context)
 
-    private var adMedia: MediaView? = MediaView(context)
+    private var adMedia: MediaView? = MediaView(context!!)
     private var adIcon: ImageView? = ImageView(context)
 
     private var adHeadline: TextView? = TextView(context)
@@ -291,7 +291,7 @@ class NativeAdPlatformView(context: Context?, data: Map<String?, Any?>?) : Platf
         if (nativeAd == null) return
 
         // Some assets are guaranteed to be in every UnifiedNativeAd.
-        adMedia?.setMediaContent(nativeAd.mediaContent)
+        adMedia?.setMediaContent(nativeAd.mediaContent!!)
         adMedia?.setImageScaleType(ImageView.ScaleType.FIT_CENTER)
 
         adHeadline?.text = nativeAd.headline
